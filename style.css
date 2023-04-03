@@ -1,10 +1,10 @@
 body {
-    margin: 0;
-    background: green;
-    overflow: hidden; /* overflow specifies whether to clip content or add scrollbars if the element is too big to fit */
-    text-align: center;
+  margin: 0;
+  background: green;
+  overflow: hidden; /* overflow specifies whether to clip content or add scrollbars if the element is too big to fit */
+  text-align: center;
 }
 
 canvas {
-    background: gray;
+  background: gray;
 }
