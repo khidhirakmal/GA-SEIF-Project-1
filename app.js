@@ -1,7 +1,7 @@
 // Setting up Canvas //
 const canvas = document.getElementById("canvas"); // calls the ID and gives it a variable
 canvas.width = 200; // in pixels
-canvas.height = window.innerHeight; // height is set according to browser size
+canvas.height = window.innerHeight; // height is set according to browser size (this code will be shifted to the animation function)
 
 // Get 2D Context //
 /*  <canvas> element does not provide drawing capabilities. 
@@ -72,7 +72,7 @@ class Controls {
 
 // Creating Cars //
 class Car {
-  // 4 parameters which is required to create a rectangle path
+  // 4 parameters which is required to create a rectangle path.
   constructor(x, y, width, height) {
     this.x = x;
     this.y = y;
@@ -80,10 +80,22 @@ class Car {
     this.height = height;
     // "this" keyword refers to the instance being created and set its properties. e.g. new Car (100, 100, 30, 50)
 
-    this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property
+    this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
   }
 
-  draw(ctx) {
+  updateMovement() {
+    // an object method that updates the car movements.
+    if (this.controls.forward) {
+      // refers to `this.controls` in line 83 which refers to `this.forward` in the Controls class.
+      this.y -= 2;
+    }
+    if (this.controls.backward) {
+      this.y += 2;
+    }
+  }
+
+  drawRaceCar(ctx) {
+    // an object method that draws and colors the car.
     ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
     ctx.rect(
       // .rect() used to define a rectangle path. takes in 4 arguments (x, y, width, height). this method does not draw, it only defines.
@@ -96,5 +108,21 @@ class Car {
   }
 }
 
+function redrawCanvas() {
+  canvas.height = window.innerHeight; // reassigns the window height so that users are able to adjust their window size
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // clears the canvas
+  raceCar.drawRaceCar(ctx); // redraw the canvas with the updated state of your program
+}
+
+// Creating a function that creates an animation loop //
+function animate() {
+  // animate() is not a built-in function. it's a common description for a function to create animation on canvas
+  raceCar.updateMovement(); // invoking updateMovement() in Car class
+  raceCar.drawRaceCar(ctx); // invoking draw (based on 2D context) for the raceCar (drawRaceCar() in Car Class)
+  redrawCanvas(); // a shortcut method is just to write `canvas.height = window.innerHeight`. it works the same.
+  requestAnimationFrame(animate);
+}
+
+// Creating the Player's Race Car //
 const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
-raceCar.draw(ctx); // invoking draw (based on 2D context) for the raceCar
+animate();
