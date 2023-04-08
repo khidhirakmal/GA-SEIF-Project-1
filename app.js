@@ -88,7 +88,35 @@ class Car {
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
   }
 
-  updateMovement() {
+  // Create collision detection points
+  #createPolygon() {
+    const points = [];
+    const hypotenuse = Math.hypot(this.width, this.height) / 2; // getting the length of hypotenuse divided by 2. because we want the length starting from the centre of the rectangle
+    const angle = Math.atan2(this.width, this.height); // getting the angle (in radian) using width and height. this is for the angle from the center to the corners of rectangle
+    // top-right point
+    points.push({
+      x: this.x - Math.sin(this.angle - angle) * hypotenuse,
+      y: this.y - Math.cos(this.angle - angle) * hypotenuse,
+    });
+    // top-left point
+    points.push({
+      x: this.x - Math.sin(this.angle + angle) * hypotenuse,
+      y: this.y - Math.cos(this.angle + angle) * hypotenuse,
+    });
+    // bottom-right point (2PI = 360 degrees, PI = 180 degrees)
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle - angle) * hypotenuse,
+      y: this.y - Math.cos(Math.PI + this.angle - angle) * hypotenuse,
+    });
+    // bottom-left point (2PI = 360 degrees, PI = 180 degrees)
+    points.push({
+      x: this.x - Math.sin(Math.PI + this.angle + angle) * hypotenuse,
+      y: this.y - Math.cos(Math.PI + this.angle + angle) * hypotenuse,
+    });
+    return points;
+  }
+
+  movements() {
     // an object method that updates the car movements.
     if (this.controls.forward) {
       // refers to `this.controls` in line 83 which refers to `this.forward` in the Controls class.
@@ -219,7 +247,7 @@ const road = new Road(canvas.width / 2, canvas.width * 0.9);
 // Creating a function that creates an animation loop //
 function animate() {
   // animate() is not a built-in function. it's a common description for a function to create animation on canvas
-  raceCar.updateMovement(); // invoking updateMovement() in Car class
+  raceCar.movements(); // invoking movements() in Car class
 
   canvas.height = window.innerHeight; // reassigns canvas.height during animate call, it will refresh everything
 
