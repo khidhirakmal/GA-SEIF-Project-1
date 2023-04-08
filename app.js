@@ -28,10 +28,10 @@ class Controls {
       // `onkeydown` is an event listener. `(event) => {}` means that a function will be executed when an event occurs.
       switch (event.key) {
         /* `switch` is a control statement that evaluates an expression `(event.key)` and executes a block of code (case) depending on the value 
-        of the expression. it will search through each `case` for a match and executes the block of code. 
+            of the expression. it will search through each `case` for a match and executes the block of code. 
         
-        `event.key` is a property of `KeyboardEvent` object.
-        when the Up key is pressed, it becomes `switch (ArrowUp)`. switch will look for a case containing the same `KeyboardEvent` and executes the code block. */
+            `event.key` is a property of `KeyboardEvent` object.
+            when the Up key is pressed, it becomes `switch (ArrowUp)`. switch will look for a case containing the same `KeyboardEvent` and executes the code block. */
         case "ArrowUp":
           this.forward = true;
           break;
@@ -82,7 +82,7 @@ class Car {
 
     this.speed = 0;
     this.acceleration = 0.2;
-    this.maxSpeed = 4;
+    this.maxSpeed = 5;
     this.friction = 0.05;
 
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
@@ -180,6 +180,7 @@ class Road {
     const topRight = { x: this.right, y: this.top };
     const bottomLeft = { x: this.left, y: this.bottom };
     const bottomRight = { x: this.right, y: this.bottom };
+    // Array for borders
     this.borders = [
       [topLeft, bottomLeft],
       [topRight, bottomRight],
@@ -190,7 +191,7 @@ class Road {
   draw(ctx) {
     ctx.lineWidth = 4;
     ctx.strokeStyle = "white";
-    // Creating lanes
+    // Creating road lanes
     for (let i = 1; i <= this.laneCount - 1; i++) {
       const x = lerp(this.left, this.right, i / this.laneCount); // refer to line 158, linear interpolation
 
@@ -201,6 +202,7 @@ class Road {
       ctx.stroke();
     }
 
+    // Creating road shoulders
     ctx.setLineDash([]); // empty arguments = solid line
     this.borders.forEach((border) => {
       ctx.beginPath(); // clears existing path and creates new path.
@@ -211,21 +213,28 @@ class Road {
   }
 }
 
-// Creating the Road
+// Creating the Road //
 const road = new Road(canvas.width / 2, canvas.width * 0.9);
 
-// Creating a function that creates an animation loop (Part 1) //
-function redrawCanvas() {
-  canvas.height = window.innerHeight; // reassigns the window height so that users are able to adjust their window size
-  ctx.clearRect(0, 0, canvas.width / 2, canvas.height); // clears the canvas
-  raceCar.draw(ctx); // redraw the canvas with the updated state of your program
-}
-// Creating a function that creates an animation loop (Part 2) //
+// Creating a function that creates an animation loop //
 function animate() {
   // animate() is not a built-in function. it's a common description for a function to create animation on canvas
   raceCar.updateMovement(); // invoking updateMovement() in Car class
 
-  redrawCanvas(); // a shortcut method is just to write `canvas.height = window.innerHeight`. it works the same.
+  canvas.height = window.innerHeight; // reassigns canvas.height during animate call, it will refresh everything
+
+  // Overhead camera //
+  ctx.save(); // saves the current state of the canvas context, including transformations, styles, and other properties so that they can be restored later using `ctx.restore()`.
+  /* at this point, it saves the state of the canvas where the car was assigned to be located in the middle of the road. means that it will be the origin point when using translate(). 
+     thus, if it was `translate(0,0)`, the car will still be in the middle of the road and canvas.*/
+  ctx.translate(0, -raceCar.y + canvas.height * 0.8); // takes 2 arguments, horizontal and vertical distances.
+  //   `-raceCar.y` assigns the car to be at the of the window. canvas.height * 0.8 assigns the car to be at 80% height at any window size.
+
+  /* ctx.translate() is a method that moves the origin point (0,0) of the canvas context (in this case the raceCar) to a new location. 
+     The code translates the canvas context (raceCar) by the distance equal to raceCar.y pixels in the upward direction. This means 
+     that all subsequent drawing operations will be shifted vertically by that amount.*/
+
+  // Drawing road and car //
   road.draw(ctx); // invokes draw for Road before the raceCar gets drawn
   raceCar.draw(ctx); // invoking draw (based on 2D context) for the raceCar (draw() in Car Class)
   requestAnimationFrame(animate); // a method provided by browsers that schedules a function to run before the next repaint of the browser window. it takes a single argument.
