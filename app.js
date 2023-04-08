@@ -124,6 +124,17 @@ class Car {
       this.speed = 0;
     }
 
+    // Creating left and right movements
+    if (this.controls.left) {
+      // positive X value will shift animation to the right
+      this.x += 2;
+    }
+    if (this.controls.right) {
+      // negative X value will shift animation to the left
+      this.x -= 2;
+    }
+
+    // Making the car move
     this.y -= this.speed; // for the car to move forward, it will be going against Y axis. therefore it has to be in negative value. things are inverted in this method.
   }
 
