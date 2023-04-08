@@ -80,6 +80,11 @@ class Car {
     this.height = height;
     // "this" keyword refers to the instance being created and set its properties. e.g. new Car (100, 100, 30, 50)
 
+    this.speed = 0;
+    this.acceleration = 0.2;
+    this.maxSpeed = 3;
+    this.friction = 0.05;
+
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
   }
 
@@ -87,11 +92,39 @@ class Car {
     // an object method that updates the car movements.
     if (this.controls.forward) {
       // refers to `this.controls` in line 83 which refers to `this.forward` in the Controls class.
-      this.y -= 2;
+      // this.y -= 2;
+      this.speed += this.acceleration; // speed increases by 0.2
     }
     if (this.controls.backward) {
-      this.y += 2;
+      // this.y += 2;
+      this.speed -= this.acceleration;
     }
+
+    // Capping the max speed for forward and reverse movement
+    if (this.speed > this.maxSpeed) {
+      this.speed = this.maxSpeed;
+    }
+    if (this.speed < -this.maxSpeed / 2) {
+      this.speed = -this.maxSpeed / 2; // negative sign is important to indicate that the car is reversing
+      /* this.y = this.y - (-1.5)
+         this.y = 0 + 1.5
+         this.y = 1.5 (positive Y value, means car is reversing at a cap of 1.5 pixels)
+       */
+    }
+
+    // Applying friction to stop the car
+    if (this.speed > 0) {
+      this.speed -= this.friction;
+    }
+    if (this.speed < 0) {
+      this.speed += this.friction;
+    }
+    // Refining friction values to prevent micro movements
+    if (Math.abs(this.speed) < this.friction) {
+      this.speed = 0;
+    }
+
+    this.y -= this.speed; // for the car to move forward, it will be going against Y axis. therefore it has to be in negative value. things are inverted in this method.
   }
 
   drawRaceCar(ctx) {
@@ -120,7 +153,10 @@ function animate() {
   raceCar.updateMovement(); // invoking updateMovement() in Car class
   raceCar.drawRaceCar(ctx); // invoking draw (based on 2D context) for the raceCar (drawRaceCar() in Car Class)
   redrawCanvas(); // a shortcut method is just to write `canvas.height = window.innerHeight`. it works the same.
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animate); // a method provided by browsers that schedules a function to run before the next repaint of the browser window. it takes a single argument.
+  /* In the context of a canvas animation, requestAnimationFrame() is typically used to schedule a function to update the 
+  canvas state and render the next frame of the animation. This function can include calculations to update the position 
+  or appearance of objects on the canvas, and then call the appropriate methods to draw those objects on the canvas.*/
 }
 
 // Creating the Player's Race Car //
