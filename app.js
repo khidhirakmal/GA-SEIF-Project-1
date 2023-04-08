@@ -154,7 +154,7 @@ class Car {
 
 // Creating the Player's Race Car //
 const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
-animate();
+
 
 // Creating a Road Class //
 class Road {
@@ -212,6 +212,6 @@ function animate() {
   or appearance of objects on the canvas, and then call the appropriate methods to draw those objects on the canvas.*/
 }
 
-
-
+// Calling animate function //
+animate();
 
