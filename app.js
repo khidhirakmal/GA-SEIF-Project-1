@@ -45,7 +45,7 @@ class Controls {
           this.right = true;
           break;
       }
-      console.table(this); // a method that logs an array or object in a table format. it takes object as argument and display its properties and values in a tabular form.
+    //   console.table(this); // a method that logs an array or object in a table format. it takes object as argument and display its properties and values in a tabular form.
     };
 
     document.onkeyup = (event) => {
@@ -65,7 +65,7 @@ class Controls {
           this.right = false;
           break;
       }
-      console.table(this);
+    //   console.table(this); // removing console.table(this) this is useful for debugging but better to clean up 
     };
   }
 }
@@ -82,7 +82,7 @@ class Car {
 
     this.speed = 0;
     this.acceleration = 0.2;
-    this.maxSpeed = 3;
+    this.maxSpeed = 4;
     this.friction = 0.05;
 
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
@@ -126,12 +126,12 @@ class Car {
 
     // Creating left and right movements
     if (this.controls.left) {
-      // positive X value will shift animation to the right
-      this.x += 2;
-    }
-    if (this.controls.right) {
       // negative X value will shift animation to the left
       this.x -= 2;
+    }
+    if (this.controls.right) {
+      // positive X value will shift animation to the right
+      this.x += 2;
     }
 
     // Making the car move
