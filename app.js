@@ -152,7 +152,11 @@ class Car {
   }
 }
 
-// Creating a Road Class
+// Creating the Player's Race Car //
+const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
+animate();
+
+// Creating a Road Class //
 class Road {
   constructor(x, width) {
     this.x = x; // road centered within X value
@@ -185,13 +189,17 @@ class Road {
   }
 }
 
+// Creating the Road
+const road = new Road(canvas.width / 2, canvas.width);
+
+
+// Creating a function that creates an animation loop (Part 1) //
 function redrawCanvas() {
   canvas.height = window.innerHeight; // reassigns the window height so that users are able to adjust their window size
   ctx.clearRect(0, 0, canvas.width, canvas.height); // clears the canvas
   raceCar.draw(ctx); // redraw the canvas with the updated state of your program
 }
-
-// Creating a function that creates an animation loop //
+// Creating a function that creates an animation loop (Part 2) //
 function animate() {
   // animate() is not a built-in function. it's a common description for a function to create animation on canvas
   raceCar.updateMovement(); // invoking updateMovement() in Car class
@@ -204,9 +212,6 @@ function animate() {
   or appearance of objects on the canvas, and then call the appropriate methods to draw those objects on the canvas.*/
 }
 
-// Creating the Player's Race Car //
-const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
-animate();
 
-// Creating the Road
-const road = new Road(canvas.width / 2, canvas.width);
+
+
