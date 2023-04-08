@@ -45,7 +45,7 @@ class Controls {
           this.right = true;
           break;
       }
-    //   console.table(this); // a method that logs an array or object in a table format. it takes object as argument and display its properties and values in a tabular form.
+      //   console.table(this); // a method that logs an array or object in a table format. it takes object as argument and display its properties and values in a tabular form.
     };
 
     document.onkeyup = (event) => {
@@ -65,7 +65,7 @@ class Controls {
           this.right = false;
           break;
       }
-    //   console.table(this); // removing console.table(this) this is useful for debugging but better to clean up 
+      //   console.table(this); // removing console.table(this) this is useful for debugging but better to clean up
     };
   }
 }
@@ -138,7 +138,7 @@ class Car {
     this.y -= this.speed; // for the car to move forward, it will be going against Y axis. therefore it has to be in negative value. things are inverted in this method.
   }
 
-  drawRaceCar(ctx) {
+  draw(ctx) {
     // an object method that draws and colors the car.
     ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
     ctx.rect(
@@ -152,17 +152,51 @@ class Car {
   }
 }
 
+// Creating a Road Class
+class Road {
+  constructor(x, width) {
+    this.x = x; // road centered within X value
+    this.width = width;
+    this.laneCount = 3; // assiging a default value of 3
+
+    this.left = x - width / 2;
+    this.right = x + width / 2;
+
+    // Endless Road
+    const infinity = 1000000; // we are not using infinity javascript
+    this.top = -infinity; // going against Y-axis
+    this.bottom = infinity; // going along Y-axis
+  }
+
+  // Drawing the road
+  draw(ctx) {
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "white";
+
+    ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
+    ctx.moveTo(this.left, this.top);
+    ctx.lineTo(this.left, this.bottom);
+    ctx.stroke();
+
+    ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
+    ctx.moveTo(this.right, this.top);
+    ctx.lineTo(this.rightt, this.bottom);
+    ctx.stroke();
+  }
+}
+
 function redrawCanvas() {
   canvas.height = window.innerHeight; // reassigns the window height so that users are able to adjust their window size
   ctx.clearRect(0, 0, canvas.width, canvas.height); // clears the canvas
-  raceCar.drawRaceCar(ctx); // redraw the canvas with the updated state of your program
+  raceCar.draw(ctx); // redraw the canvas with the updated state of your program
 }
 
 // Creating a function that creates an animation loop //
 function animate() {
   // animate() is not a built-in function. it's a common description for a function to create animation on canvas
   raceCar.updateMovement(); // invoking updateMovement() in Car class
-  raceCar.drawRaceCar(ctx); // invoking draw (based on 2D context) for the raceCar (drawRaceCar() in Car Class)
+  road.draw(ctx); // invokes draw for Road before the raceCar gets drawn
+  raceCar.draw(ctx); // invoking draw (based on 2D context) for the raceCar (draw() in Car Class)
   redrawCanvas(); // a shortcut method is just to write `canvas.height = window.innerHeight`. it works the same.
   requestAnimationFrame(animate); // a method provided by browsers that schedules a function to run before the next repaint of the browser window. it takes a single argument.
   /* In the context of a canvas animation, requestAnimationFrame() is typically used to schedule a function to update the 
@@ -173,3 +207,6 @@ function animate() {
 // Creating the Player's Race Car //
 const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
 animate();
+
+// Creating the Road
+const road = new Road(canvas.width / 2, canvas.width);
