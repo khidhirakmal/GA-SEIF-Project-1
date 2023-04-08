@@ -155,7 +155,6 @@ class Car {
 // Creating the Player's Race Car //
 const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
 
-
 // Creating a Road Class //
 class Road {
   constructor(x, width) {
@@ -174,38 +173,63 @@ class Road {
 
   // Drawing the road
   draw(ctx) {
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = "white";
 
-    ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
-    ctx.moveTo(this.left, this.top);
-    ctx.lineTo(this.left, this.bottom);
-    ctx.stroke();
-
-    ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
-    ctx.moveTo(this.right, this.top);
-    ctx.lineTo(this.rightt, this.bottom);
-    ctx.stroke();
+    for (let i = 0; i <= this.laneCount; i++) {
+      const x = lerp(
+        // linear interpolation
+        this.left,
+        this.right,
+        i / this.laneCount
+      );
+      // Creating road shoulders and lanes //
+      if (i > 0 && i < this.laneCount) {
+        ctx.setLineDash([20, 20]); // method to set line dash pattern. takes an array of values as argument. even indices specifices length of solid segments. odd indices specifies length of transparent segments.
+      } else {
+        ctx.setLineDash([]); // empty arguments = solid line
+      }
+      ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
+      ctx.moveTo(x, this.top);
+      ctx.lineTo(x, this.bottom);
+      ctx.stroke();
+    }
   }
+
+  // Creating road shoulders //
+  // ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
+  // ctx.moveTo(this.left, this.top);
+  // ctx.lineTo(this.left, this.bottom);
+  // ctx.stroke();
+
+  // ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
+  // ctx.moveTo(this.right, this.top);
+  // ctx.lineTo(this.right, this.bottom);
+  // ctx.stroke();
+}
+
+// Linear Interpolation //
+function lerp(A, B, t) {
+  return A + (B - A) * t;
 }
 
 // Creating the Road
-const road = new Road(canvas.width / 2, canvas.width);
-
+const road = new Road(canvas.width / 2, canvas.width * 0.9);
 
 // Creating a function that creates an animation loop (Part 1) //
 function redrawCanvas() {
   canvas.height = window.innerHeight; // reassigns the window height so that users are able to adjust their window size
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // clears the canvas
+  ctx.clearRect(0, 0, canvas.width / 2, canvas.height); // clears the canvas
   raceCar.draw(ctx); // redraw the canvas with the updated state of your program
 }
 // Creating a function that creates an animation loop (Part 2) //
 function animate() {
   // animate() is not a built-in function. it's a common description for a function to create animation on canvas
   raceCar.updateMovement(); // invoking updateMovement() in Car class
+
+  redrawCanvas(); // a shortcut method is just to write `canvas.height = window.innerHeight`. it works the same.
   road.draw(ctx); // invokes draw for Road before the raceCar gets drawn
   raceCar.draw(ctx); // invoking draw (based on 2D context) for the raceCar (draw() in Car Class)
-  redrawCanvas(); // a shortcut method is just to write `canvas.height = window.innerHeight`. it works the same.
   requestAnimationFrame(animate); // a method provided by browsers that schedules a function to run before the next repaint of the browser window. it takes a single argument.
   /* In the context of a canvas animation, requestAnimationFrame() is typically used to schedule a function to update the 
   canvas state and render the next frame of the animation. This function can include calculations to update the position 
@@ -214,4 +238,3 @@ function animate() {
 
 // Calling animate function //
 animate();
-
