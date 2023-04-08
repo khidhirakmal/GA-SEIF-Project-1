@@ -155,6 +155,11 @@ class Car {
 // Creating the Player's Race Car //
 const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
 
+// Linear Interpolation //
+function lerp(A, B, t) {
+  return A + (B - A) * t;
+}
+
 // Creating a Road Class //
 class Road {
   constructor(x, width) {
@@ -169,48 +174,41 @@ class Road {
     const infinity = 1000000; // we are not using infinity javascript
     this.top = -infinity; // going against Y-axis
     this.bottom = infinity; // going along Y-axis
+
+    // Borders
+    const topLeft = { x: this.left, y: this.top };
+    const topRight = { x: this.right, y: this.top };
+    const bottomLeft = { x: this.left, y: this.bottom };
+    const bottomRight = { x: this.right, y: this.bottom };
+    this.borders = [
+      [topLeft, bottomLeft],
+      [topRight, bottomRight],
+    ];
   }
 
-  // Drawing the road
+  // Drawing the road //
   draw(ctx) {
     ctx.lineWidth = 4;
     ctx.strokeStyle = "white";
+    // Creating lanes
+    for (let i = 1; i <= this.laneCount - 1; i++) {
+      const x = lerp(this.left, this.right, i / this.laneCount); // refer to line 158, linear interpolation
 
-    for (let i = 0; i <= this.laneCount; i++) {
-      const x = lerp(
-        // linear interpolation
-        this.left,
-        this.right,
-        i / this.laneCount
-      );
-      // Creating road shoulders and lanes //
-      if (i > 0 && i < this.laneCount) {
-        ctx.setLineDash([20, 20]); // method to set line dash pattern. takes an array of values as argument. even indices specifices length of solid segments. odd indices specifies length of transparent segments.
-      } else {
-        ctx.setLineDash([]); // empty arguments = solid line
-      }
-      ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
+      ctx.setLineDash([20, 20]); // takes an array of values as arguments. even indices specifies length of solid segments. odd indices specifies length of transparent segments.
+      ctx.beginPath(); // clears existing path and creates new path.
       ctx.moveTo(x, this.top);
       ctx.lineTo(x, this.bottom);
       ctx.stroke();
     }
+
+    ctx.setLineDash([]); // empty arguments = solid line
+    this.borders.forEach((border) => {
+      ctx.beginPath(); // clears existing path and creates new path.
+      ctx.moveTo(border[0].x, border[0].y);
+      ctx.lineTo(border[1].x, border[1].y);
+      ctx.stroke();
+    });
   }
-
-  // Creating road shoulders //
-  // ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
-  // ctx.moveTo(this.left, this.top);
-  // ctx.lineTo(this.left, this.bottom);
-  // ctx.stroke();
-
-  // ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
-  // ctx.moveTo(this.right, this.top);
-  // ctx.lineTo(this.right, this.bottom);
-  // ctx.stroke();
-}
-
-// Linear Interpolation //
-function lerp(A, B, t) {
-  return A + (B - A) * t;
 }
 
 // Creating the Road
