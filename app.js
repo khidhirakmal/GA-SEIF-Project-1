@@ -38,9 +38,12 @@ class Road {
 
   // Drawing the road //
   draw(ctx) {
+    // Creating road lanes with Linear Interpolation //
     ctx.lineWidth = 4;
     ctx.strokeStyle = "white";
-    // Creating road lanes
+    function lerp(A, B, t) {
+      return A + (B - A) * t;
+    }
     for (let i = 1; i <= this.laneCount - 1; i++) {
       const x = lerp(this.left, this.right, i / this.laneCount); // refer to line 158, linear interpolation
 
@@ -126,19 +129,6 @@ class Controls {
   }
 }
 
-// Poly Intersection and Damage Detection
-function polysIntersect(poly1, poly2) {
-  for (let i = 0; i < poly1.length; i++) {
-    for (let j = 0; j < poly2.length; j++) {
-      const touch = getIntersection(poly1[i], poly1[(i + 1) % poly1.length], poly2[j], poly2[(j + 1) % poly2.length]);
-      if (touch) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 // Creating Cars //
 class Car {
   // 4 parameters which is required to create a rectangle path.
@@ -156,7 +146,6 @@ class Car {
     this.damaged = false;
 
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
-    this.polygon = this.createPolygon();
   }
 
   // Car Movements //
