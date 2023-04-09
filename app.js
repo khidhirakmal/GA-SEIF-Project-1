@@ -9,6 +9,62 @@ canvas.height = window.innerHeight; // height is set according to browser size (
     once 2D context is obtained, we can use various methods and properties to draw shapes, text and images on the canvas. */
 const ctx = canvas.getContext("2d");
 
+// Creating a Road Class //
+class Road {
+  constructor(x, width) {
+    this.x = x; // road centered within X value
+    this.width = width;
+    this.laneCount = 3; // assiging a default value of 3
+
+    this.left = x - width / 2;
+    this.right = x + width / 2;
+
+    // Endless Road
+    const infinity = 1000000; // we are not using infinity javascript
+    this.top = -infinity; // going against Y-axis
+    this.bottom = infinity; // going along Y-axis
+
+    // Borders
+    const topLeft = { x: this.left, y: this.top };
+    const topRight = { x: this.right, y: this.top };
+    const bottomLeft = { x: this.left, y: this.bottom };
+    const bottomRight = { x: this.right, y: this.bottom };
+    // Array for borders
+    this.borders = [
+      [topLeft, bottomLeft],
+      [topRight, bottomRight],
+    ];
+  }
+
+  // Drawing the road //
+  draw(ctx) {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "white";
+    // Creating road lanes
+    for (let i = 1; i <= this.laneCount - 1; i++) {
+      const x = lerp(this.left, this.right, i / this.laneCount); // refer to line 158, linear interpolation
+
+      ctx.setLineDash([20, 20]); // takes an array of values as arguments. even indices specifies length of solid segments. odd indices specifies length of transparent segments.
+      ctx.beginPath(); // clears existing path and creates new path.
+      ctx.moveTo(x, this.top);
+      ctx.lineTo(x, this.bottom);
+      ctx.stroke();
+    }
+
+    // Creating road shoulders
+    ctx.setLineDash([]); // empty arguments = solid line
+    this.borders.forEach((border) => {
+      ctx.beginPath(); // clears existing path and creates new path.
+      ctx.moveTo(border[0].x, border[0].y);
+      ctx.lineTo(border[1].x, border[1].y);
+      ctx.stroke();
+    });
+  }
+}
+
+// Creating the Road //
+const road = new Road(canvas.width / 2, canvas.width * 0.9);
+
 // Assigning Controls //
 class Controls {
   // constructor parameters left empty as there is no initial value or data to be passed in. proceed straight to functions for execution.
@@ -70,6 +126,19 @@ class Controls {
   }
 }
 
+// Poly Intersection and Damage Detection
+function polysIntersect(poly1, poly2) {
+  for (let i = 0; i < poly1.length; i++) {
+    for (let j = 0; j < poly2.length; j++) {
+      const touch = getIntersection(poly1[i], poly1[(i + 1) % poly1.length], poly2[j], poly2[(j + 1) % poly2.length]);
+      if (touch) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Creating Cars //
 class Car {
   // 4 parameters which is required to create a rectangle path.
@@ -84,38 +153,13 @@ class Car {
     this.acceleration = 0.2;
     this.maxSpeed = 5;
     this.friction = 0.05;
+    this.damaged = false;
 
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
+    this.polygon = this.createPolygon();
   }
 
-  // Create collision detection points
-  #createPolygon() {
-    const points = [];
-    const hypotenuse = Math.hypot(this.width, this.height) / 2; // getting the length of hypotenuse divided by 2. because we want the length starting from the centre of the rectangle
-    const angle = Math.atan2(this.width, this.height); // getting the angle (in radian) using width and height. this is for the angle from the center to the corners of rectangle
-    // top-right point
-    points.push({
-      x: this.x - Math.sin(this.angle - angle) * hypotenuse,
-      y: this.y - Math.cos(this.angle - angle) * hypotenuse,
-    });
-    // top-left point
-    points.push({
-      x: this.x - Math.sin(this.angle + angle) * hypotenuse,
-      y: this.y - Math.cos(this.angle + angle) * hypotenuse,
-    });
-    // bottom-right point (2PI = 360 degrees, PI = 180 degrees)
-    points.push({
-      x: this.x - Math.sin(Math.PI + this.angle - angle) * hypotenuse,
-      y: this.y - Math.cos(Math.PI + this.angle - angle) * hypotenuse,
-    });
-    // bottom-left point (2PI = 360 degrees, PI = 180 degrees)
-    points.push({
-      x: this.x - Math.sin(Math.PI + this.angle + angle) * hypotenuse,
-      y: this.y - Math.cos(Math.PI + this.angle + angle) * hypotenuse,
-    });
-    return points;
-  }
-
+  // Car Movements //
   movements() {
     // an object method that updates the car movements.
     if (this.controls.forward) {
@@ -167,7 +211,7 @@ class Car {
   }
 
   draw(ctx) {
-    // an object method that draws and colors the car.
+    // Object method that draws and colors the car.
     ctx.beginPath(); // clears any existing path and begins a new path. a path is a sequence of points that is used to define a shape or a line.
     ctx.rect(
       // .rect() used to define a rectangle path. takes in 4 arguments (x, y, width, height). this method does not draw, it only defines.
@@ -182,67 +226,6 @@ class Car {
 
 // Creating the Player's Race Car //
 const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
-
-// Linear Interpolation //
-function lerp(A, B, t) {
-  return A + (B - A) * t;
-}
-
-// Creating a Road Class //
-class Road {
-  constructor(x, width) {
-    this.x = x; // road centered within X value
-    this.width = width;
-    this.laneCount = 3; // assiging a default value of 3
-
-    this.left = x - width / 2;
-    this.right = x + width / 2;
-
-    // Endless Road
-    const infinity = 1000000; // we are not using infinity javascript
-    this.top = -infinity; // going against Y-axis
-    this.bottom = infinity; // going along Y-axis
-
-    // Borders
-    const topLeft = { x: this.left, y: this.top };
-    const topRight = { x: this.right, y: this.top };
-    const bottomLeft = { x: this.left, y: this.bottom };
-    const bottomRight = { x: this.right, y: this.bottom };
-    // Array for borders
-    this.borders = [
-      [topLeft, bottomLeft],
-      [topRight, bottomRight],
-    ];
-  }
-
-  // Drawing the road //
-  draw(ctx) {
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "white";
-    // Creating road lanes
-    for (let i = 1; i <= this.laneCount - 1; i++) {
-      const x = lerp(this.left, this.right, i / this.laneCount); // refer to line 158, linear interpolation
-
-      ctx.setLineDash([20, 20]); // takes an array of values as arguments. even indices specifies length of solid segments. odd indices specifies length of transparent segments.
-      ctx.beginPath(); // clears existing path and creates new path.
-      ctx.moveTo(x, this.top);
-      ctx.lineTo(x, this.bottom);
-      ctx.stroke();
-    }
-
-    // Creating road shoulders
-    ctx.setLineDash([]); // empty arguments = solid line
-    this.borders.forEach((border) => {
-      ctx.beginPath(); // clears existing path and creates new path.
-      ctx.moveTo(border[0].x, border[0].y);
-      ctx.lineTo(border[1].x, border[1].y);
-      ctx.stroke();
-    });
-  }
-}
-
-// Creating the Road //
-const road = new Road(canvas.width / 2, canvas.width * 0.9);
 
 // Creating a function that creates an animation loop //
 function animate() {
