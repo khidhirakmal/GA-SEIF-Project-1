@@ -8,3 +8,7 @@ body {
 canvas {
   background: gray;
 }
+
+#scoreboard {
+  margin: auto;
+}
