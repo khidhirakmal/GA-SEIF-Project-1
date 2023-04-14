@@ -16,37 +16,45 @@ class Road {
     this.width = width;
     this.laneCount = 3; // assiging a default value of 3
 
-    this.left = x - width / 2;
-    this.right = x + width / 2;
-
     // Endless Road
-    const infinity = 1000000; // we are not using infinity javascript
+    const infinity = 100000; // we are not using infinity javascript
     this.top = -infinity; // going against Y-axis
     this.bottom = infinity; // going along Y-axis
 
-    // Borders
+    // Road Shoulders Dimensions
+    this.left = x - width / 2;
+    this.right = x + width / 2;
+
+    // Road Shoulder Markings
     const topLeft = { x: this.left, y: this.top };
     const topRight = { x: this.right, y: this.top };
     const bottomLeft = { x: this.left, y: this.bottom };
     const bottomRight = { x: this.right, y: this.bottom };
-    // Array for borders
+    // Array for borders (Road Shoulder)
     this.borders = [
       [topLeft, bottomLeft],
       [topRight, bottomRight],
     ];
   }
 
+  // Getting center positions for each lane //
+  getLaneCenter(laneIndex) {
+    const laneWidth = this.width / this.laneCount;
+    return this.left + laneWidth / 2 + laneIndex * laneWidth;
+  }
+
   // Drawing the road //
   draw(ctx) {
-    // Creating road lanes with Linear Interpolation //
+    // Creating lanes and Linear Interpolation formula //
     ctx.lineWidth = 4;
     ctx.strokeStyle = "white";
     function lerp(A, B, t) {
       return A + (B - A) * t;
     }
+
+    // Creating lanes
     for (let i = 1; i <= this.laneCount - 1; i++) {
       const x = lerp(this.left, this.right, i / this.laneCount); // refer to line 158, linear interpolation
-
       ctx.setLineDash([20, 20]); // takes an array of values as arguments. even indices specifies length of solid segments. odd indices specifies length of transparent segments.
       ctx.beginPath(); // clears existing path and creates new path.
       ctx.moveTo(x, this.top);
@@ -78,11 +86,11 @@ class Controls {
     this.right = false;
     // in default state, none of the controls are active because all are set to "false".
 
-    this.#arrowKeyListeners(); // creates a private "#" method defined as arrowKeyListeners. private methods cannot be accessed outside of the class.
+    this.arrowKeyListeners(); // creates a private "#" method defined as arrowKeyListeners. private methods cannot be accessed outside of the class.
   }
 
   // an event listener waits for user interaction like a click or keypress and run codes based on that action
-  #arrowKeyListeners() {
+  arrowKeyListeners() {
     document.onkeydown = (event) => {
       // `onkeydown` is an event listener. `(event) => {}` means that a function will be executed when an event occurs.
       switch (event.key) {
@@ -141,9 +149,9 @@ class Car {
 
     this.speed = 0;
     this.acceleration = 0.2;
-    this.maxSpeed = 5;
+    this.maxSpeed = 13;
     this.friction = 0.05;
-    this.damaged = false;
+    this.collision = false;
 
     this.controls = new Controls(); // creating a new Controls object and assigning it to "controls" property.
   }
@@ -188,11 +196,18 @@ class Car {
     // Creating left and right movements
     if (this.controls.left) {
       // negative X value will shift animation to the left
-      this.x -= 2;
+      this.x -= 3;
     }
+
     if (this.controls.right) {
       // positive X value will shift animation to the right
-      this.x += 2;
+      this.x += 3;
+    }
+    // Constrain to road shoulders
+    if (this.x < 30) {
+      this.x = 30;
+    } else if (this.x > canvas.width - 30) {
+      this.x = canvas.width - 30;
     }
 
     // Making the car move
@@ -214,34 +229,116 @@ class Car {
 }
 
 // Creating the Player's Race Car //
-const raceCar = new Car(100, 300, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
+const raceCar = new Car(road.getLaneCenter(1), 100, 30, 50); // creating a new Car object (pos X, pos Y, width, height)
+
+// Creating Traffic Class//
+class TrafficCar {
+  constructor(x, y, width, height, speed) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+  }
+
+  update() {
+    this.y -= this.speed;
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    ctx.fillStyle = "red";
+    ctx.fill();
+  }
+}
+
+// Generating Random Traffic //
+let trafficCars = [];
+
+function generateTraffic(numCars) {
+  for (let i = 0; i < numCars; i++) {
+    const lane = Math.floor(Math.random() * road.laneCount);
+    const x = road.getLaneCenter(lane);
+    const y = raceCar.y - canvas.height;
+    const width = 30;
+    const height = 50;
+    const speed = 5; // Math.floor(Math.random() (10 - 5) + 5); Generate a random speed between 5 and 10 pixels per frame
+    const car = new TrafficCar(x, y, width, height, speed);
+    trafficCars.push(car);
+  }
+}
+
+// Drawing traffic //
+function updateTrafficCars(ctx) {
+  for (let i = 0; i < trafficCars.length; i++) {
+    trafficCars[i].update(ctx);
+  }
+}
+function drawTrafficCars(ctx) {
+  for (let i = 0; i < trafficCars.length; i++) {
+    trafficCars[i].draw(ctx);
+  }
+}
+
 
 // Creating a function that creates an animation loop //
-function animate() {
-  // animate() is not a built-in function. it's a common description for a function to create animation on canvas
+function update() {
+  // update() is not a built-in function. it's a common description for a function to create animation on canvas
+  canvas.height = window.innerHeight; // reassigns canvas.height during update call, it will refresh everything
   raceCar.movements(); // invoking movements() in Car class
-
-  canvas.height = window.innerHeight; // reassigns canvas.height during animate call, it will refresh everything
-
+  
   // Overhead camera //
   ctx.save(); // saves the current state of the canvas context, including transformations, styles, and other properties so that they can be restored later using `ctx.restore()`.
   /* at this point, it saves the state of the canvas where the car was assigned to be located in the middle of the road. means that it will be the origin point when using translate(). 
-     thus, if it was `translate(0,0)`, the car will still be in the middle of the road and canvas.*/
+  thus, if it was `translate(0,0)`, the car will still be in the middle of the road and canvas.*/
   ctx.translate(0, -raceCar.y + canvas.height * 0.8); // takes 2 arguments, horizontal and vertical distances.
   //   `-raceCar.y` assigns the car to be at the of the window. canvas.height * 0.8 assigns the car to be at 80% height at any window size.
-
   /* ctx.translate() is a method that moves the origin point (0,0) of the canvas context (in this case the raceCar) to a new location. 
-     The code translates the canvas context (raceCar) by the distance equal to raceCar.y pixels in the upward direction. This means 
-     that all subsequent drawing operations will be shifted vertically by that amount.*/
+  The code translates the canvas context (raceCar) by the distance equal to raceCar.y pixels in the upward direction. This means 
+  that all subsequent drawing operations will be shifted vertically by that amount.*/
+
+  // Collision with traffic //
+  for (let i = 0; i < trafficCars.length; i++) {
+    let trafficCol = trafficCars[i];
+    if (detectCollision(trafficCol, raceCar)) {
+      console.log("hit!");
+    }
+  }
+  
+  // Detecting Collision //
+  function detectCollision(a, b) {
+    // Check for horizontal collision
+    if (a.x < b.x + b.width && a.x + a.width > b.x) {
+      // Check for vertical collision
+      if (a.y < b.y + b.height && a.y + a.height > b.y) {
+        // Collision detected
+        return true;
+      }
+    }
+    // No collision detected
+    return false;
+  }
+
+  updateTrafficCars();
 
   // Drawing road and car //
   road.draw(ctx); // invokes draw for Road before the raceCar gets drawn
   raceCar.draw(ctx); // invoking draw (based on 2D context) for the raceCar (draw() in Car Class)
-  requestAnimationFrame(animate); // a method provided by browsers that schedules a function to run before the next repaint of the browser window. it takes a single argument.
+  drawTrafficCars(ctx);
+
+  ctx.restore();
+
+  requestAnimationFrame(update); // a method provided by browsers that schedules a function to run before the next repaint of the browser window. it takes a single argument.
   /* In the context of a canvas animation, requestAnimationFrame() is typically used to schedule a function to update the 
   canvas state and render the next frame of the animation. This function can include calculations to update the position 
   or appearance of objects on the canvas, and then call the appropriate methods to draw those objects on the canvas.*/
 }
 
-// Calling animate function //
-animate();
+// Generate traffic //
+setInterval(() => {
+  generateTraffic(Math.floor(Math.random() * 2) +1);
+}, 500);
+
+// Calling update function //
+update();
