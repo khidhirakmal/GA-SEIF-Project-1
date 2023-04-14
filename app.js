@@ -281,13 +281,12 @@ function drawTrafficCars(ctx) {
   }
 }
 
-
 // Creating a function that creates an animation loop //
 function update() {
   // update() is not a built-in function. it's a common description for a function to create animation on canvas
   canvas.height = window.innerHeight; // reassigns canvas.height during update call, it will refresh everything
   raceCar.movements(); // invoking movements() in Car class
-  
+
   // Overhead camera //
   ctx.save(); // saves the current state of the canvas context, including transformations, styles, and other properties so that they can be restored later using `ctx.restore()`.
   /* at this point, it saves the state of the canvas where the car was assigned to be located in the middle of the road. means that it will be the origin point when using translate(). 
@@ -305,7 +304,7 @@ function update() {
       console.log("hit!");
     }
   }
-  
+
   // Detecting Collision //
   function detectCollision(a, b) {
     // Check for horizontal collision
@@ -337,7 +336,7 @@ function update() {
 
 // Generate traffic //
 setInterval(() => {
-  generateTraffic(Math.floor(Math.random() * 2) +1);
+  generateTraffic(Math.floor(Math.random() * 2) + 1);
 }, 500);
 
 // Calling update function //
