@@ -3,6 +3,10 @@ const canvas = document.getElementById("canvas"); // calls the ID and gives it a
 canvas.width = 200; // in pixels
 canvas.height = window.innerHeight; // height is set according to browser size (this code will be shifted to the animation function)
 
+//Setting up Scoreboard
+const scoreboard = document.getElementById("scoreboard"); // getting scoreboard
+let distance = 0;
+
 // Get 2D Context //
 /*  <canvas> element does not provide drawing capabilities. 
     getContext() is a method that returns a 2D rendering context for the specified canvas element.  
@@ -281,14 +285,13 @@ function drawTrafficCars(ctx) {
   }
 }
 
-
 // Creating a function that creates an animation loop //
 function update() {
   // update() is not a built-in function. it's a common description for a function to create animation on canvas
   canvas.height = window.innerHeight; // reassigns canvas.height during update call, it will refresh everything
   raceCar.movements(); // invoking movements() in Car class
-  
-  // Overhead camera //
+
+  // Overhead Camera //
   ctx.save(); // saves the current state of the canvas context, including transformations, styles, and other properties so that they can be restored later using `ctx.restore()`.
   /* at this point, it saves the state of the canvas where the car was assigned to be located in the middle of the road. means that it will be the origin point when using translate(). 
   thus, if it was `translate(0,0)`, the car will still be in the middle of the road and canvas.*/
@@ -298,6 +301,15 @@ function update() {
   The code translates the canvas context (raceCar) by the distance equal to raceCar.y pixels in the upward direction. This means 
   that all subsequent drawing operations will be shifted vertically by that amount.*/
 
+  // Calculating Score //
+  distance += (raceCar.speed / 100);
+
+  function updateScoreboard() {
+    scoreboard.innerHTML = "Distance: " + distance.toFixed(0) + "";
+  }
+
+  updateScoreboard();
+
   // Collision with traffic //
   for (let i = 0; i < trafficCars.length; i++) {
     let trafficCol = trafficCars[i];
@@ -305,7 +317,7 @@ function update() {
       console.log("hit!");
     }
   }
-  
+
   // Detecting Collision //
   function detectCollision(a, b) {
     // Check for horizontal collision
@@ -336,9 +348,11 @@ function update() {
 }
 
 // Generate traffic //
-setInterval(() => {
-  generateTraffic(Math.floor(Math.random() * 2) +1);
-}, 500);
+setTimeout(() => {
+  setInterval(() => {
+    generateTraffic(Math.floor(Math.random() * 2) + 1);
+  }, 500);
+}, 2000); // Delays the execution of generateTraffic
 
 // Calling update function //
 update();
