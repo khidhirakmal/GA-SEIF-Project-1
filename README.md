@@ -1,4 +1,4 @@
-# GA-SEIF-Project-1 (Highway Racer)
+# [GA-SEIF-Project-1 (Highway Racer)](https://khidhirakmal.github.io/highway-racer/)
 
 Hello, this is my first game called Highway Racer. It is a simple 2D racing game where the player controls a car that races down a road while avoiding traffic. Please do not attempt this on public roads. :)
 
